@@ -1,26 +1,43 @@
-<div class="container">
-  <h1>AI Figurine Designer</h1>
+<div class="studio-container">
+  <h1>AI Figurine Studio</h1>
 
-  <div class="input-section">
+  <div class="input-group">
     <input 
+      type="text" 
       [(ngModel)]="userPrompt" 
-      placeholder="e.g., A 1/7 scale cyberpunk warrior figurine"
+      placeholder="Describe your figurine (e.g. Mecha Knight in rain)..."
       [disabled]="figurineService.isLoading()"
     />
-    <button (click)="onGenerate()" [disabled]="figurineService.isLoading()">
-      {{ figurineService.isLoading() ? 'Designing...' : 'Generate' }}
+    <button class="gen-btn" (click)="onGenerate()" [disabled]="figurineService.isLoading()">
+      {{ figurineService.isLoading() ? 'PROCESSING...' : 'DESIGN' }}
     </button>
   </div>
 
-  <div class="display-section">
+  <div class="display-frame">
     @if (figurineService.isLoading()) {
-      <div class="loader">✨ Magic is happening...</div>
+      <div class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Synthesizing Reality...</p>
+      </div>
     } @else if (figurineService.currentImage()) {
-      <img [src]="figurineService.currentImage()" alt="Generated Figurine" class="fade-in" />
+      <div class="image-container">
+        <img [src]="figurineService.currentImage()" alt="Generated Figurine" />
+        <button class="download-btn" (click)="onDownload()" title="Download Image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      </div>
     } @else if (figurineService.errorMessage()) {
-      <p class="error">{{ figurineService.errorMessage() }}</p>
+      <div class="loading-overlay error">
+        <p>{{ figurineService.errorMessage() }}</p>
+      </div>
     } @else {
-      <div class="placeholder">Your masterpiece will appear here.</div>
+      <div class="loading-overlay">
+        <p class="placeholder-text">Awaiting Input Commands</p>
+      </div>
     }
   </div>
 </div>

@@ -19,4 +19,31 @@ export class FigurineDesignerComponent {
       this.figurineService.generateFigurine(this.userPrompt());
     }
   }
+
+  async onDownload() {
+    const imageUrl = this.figurineService.currentImage();
+    if (!imageUrl) return;
+
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `figurine-${Date.now()}.png`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  }
 }

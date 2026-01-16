@@ -27,15 +27,15 @@ export class FigurineService {
     const body = {
       prompt: prompt,
       n: 1,
-      size: "1024x1024"
+      size: "1024x1024" // Smaller size for faster downloads
     };
 
     // Make the POST request to Azure OpenAI
     this.http.post<any>(url, body, { headers }).subscribe({
       next: (response) => {
         const imageUrl = response.data[0].url;
-        this.currentImage.set(imageUrl); // Update signal
-        this.isLoading.set(false);
+        // Preload the image before showing it
+        this.preloadImage(imageUrl);
       },
       error: (err) => {
         console.error('API Error:', err);
@@ -43,5 +43,22 @@ export class FigurineService {
         this.isLoading.set(false);
       }
     });
+  }
+
+  /**
+   * Preloads an image before displaying it.
+   * This ensures the loading state stays active until the image is fully downloaded.
+   */
+  private preloadImage(imageUrl: string) {
+    const img = new Image();
+    img.onload = () => {
+      this.currentImage.set(imageUrl);
+      this.isLoading.set(false);
+    };
+    img.onerror = () => {
+      this.errorMessage.set('Failed to load image. Please try again.');
+      this.isLoading.set(false);
+    };
+    img.src = imageUrl;
   }
 }
