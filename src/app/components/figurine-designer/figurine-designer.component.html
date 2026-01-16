@@ -1,0 +1,26 @@
+<div class="container">
+  <h1>AI Figurine Designer</h1>
+
+  <div class="input-section">
+    <input 
+      [(ngModel)]="userPrompt" 
+      placeholder="e.g., A 1/7 scale cyberpunk warrior figurine"
+      [disabled]="figurineService.isLoading()"
+    />
+    <button (click)="onGenerate()" [disabled]="figurineService.isLoading()">
+      {{ figurineService.isLoading() ? 'Designing...' : 'Generate' }}
+    </button>
+  </div>
+
+  <div class="display-section">
+    @if (figurineService.isLoading()) {
+      <div class="loader">✨ Magic is happening...</div>
+    } @else if (figurineService.currentImage()) {
+      <img [src]="figurineService.currentImage()" alt="Generated Figurine" class="fade-in" />
+    } @else if (figurineService.errorMessage()) {
+      <p class="error">{{ figurineService.errorMessage() }}</p>
+    } @else {
+      <div class="placeholder">Your masterpiece will appear here.</div>
+    }
+  </div>
+</div>
