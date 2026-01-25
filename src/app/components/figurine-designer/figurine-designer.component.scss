@@ -1,22 +1,259 @@
+// Variables
+:root {
+  --sidebar-width: 320px;
+  --header-height: 60px;
+}
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: #0a0a0a;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --- Mobile Sidebar Toggle & Overlay --- */
+.menu-toggle {
+  display: none; // Hidden on desktop
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* --- Sidebar Styles --- */
+.history-sidebar {
+  width: 340px;
+  height: 100%;
+  background: rgba(18, 18, 24, 0.95);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 1001;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  // Custom scrollbar for sidebar
+  .history-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .history-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+
+  .history-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #fff;
+    margin: 0;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .close-sidebar-btn {
+    display: none; // Hidden on desktop
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* --- History Card (Thumbnail Layout) --- */
+.history-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
+    border-color: rgba(var(--neon-blue-rgb), 0.3); // Assuming neon blue var exists, fallback handled gracefully if not
+  }
+
+  .thumbnail-wrapper {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover .thumbnail-wrapper img {
+    transform: scale(1.1);
+  }
+
+  .card-info {
+    flex: 1;
+    min-width: 0; // Important for text truncation
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+
+    .prompt-preview {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .timestamp {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    opacity: 0; // Hidden by default on desktop
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 50, 50, 0.2);
+      color: #ff4757;
+    }
+  }
+
+  // Show delete button on hover or if it's a touch device (optional, but handled by hover on mobile usually implies tap)
+  &:hover .delete-btn {
+    opacity: 1;
+  }
+}
+
+// Ensure delete button is visible on mobile/touch without hover if needed, or rely on active state. 
+// For better UX on mobile, maybe always show it or show on "active".
+// Let's keep it hover for desktop, and for mobile it might require a tap to see? 
+// No, on mobile hover doesn't really exist. Let's make it always visible on small screens.
+
+@media (max-width: 1024px) {
+  .history-card .delete-btn {
+    opacity: 0.7; // Always visible on mobile/tablet
+  }
+}
+
+.empty-msg {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 2rem;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* --- Main Content --- */
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  position: relative;
+  overflow-y: auto; // Allow main content to scroll if needed
+}
+
+// Keep existing studio container styles
 .studio-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem;
-  min-height: 100vh;
-  background: 
-    radial-gradient(circle at top right, rgba(188, 19, 254, 0.15), transparent 50%),
-    radial-gradient(circle at bottom left, rgba(0, 242, 255, 0.1), transparent 50%),
-    var(--dark-bg, #0a0b10);
+  width: 100%;
+  max-width: 1200px;
+  // min-height removed to allow centering in flex parent better if needed
 
   h1 {
     font-size: 3rem;
     text-transform: uppercase;
     letter-spacing: 4px;
-    background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+    text-align: center;
+    background: linear-gradient(to right, var(--neon-blue, #00f2ff), var(--neon-purple, #bc13fe));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+    margin-bottom: 2rem;
   }
 }
 
@@ -25,7 +262,7 @@
   max-width: 700px;
   display: flex;
   gap: 15px;
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.05); // glass-bg fallback
   padding: 10px;
   border-radius: 15px;
   backdrop-filter: blur(10px);
@@ -40,12 +277,14 @@
     padding: 15px;
     font-size: 1.1rem;
     outline: none;
-    
-    &::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
   }
 
   .gen-btn {
-    background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+    background: linear-gradient(45deg, var(--neon-blue, #00f2ff), var(--neon-purple, #bc13fe));
     border: none;
     padding: 0 30px;
     border-radius: 10px;
@@ -53,13 +292,17 @@
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap; // Prevent text wrap on small screens
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 0 15px var(--neon-blue);
+      box-shadow: 0 0 15px var(--neon-blue, #00f2ff);
     }
 
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -68,7 +311,7 @@
   width: 512px;
   height: 512px;
   border-radius: 20px;
-  border: 1px solid var(--neon-blue);
+  border: 1px solid var(--neon-blue, #00f2ff);
   overflow: hidden;
   position: relative;
   background: rgba(0, 0, 0, 0.5);
@@ -130,12 +373,12 @@
     justify-content: center;
     align-items: center;
     background: rgba(10, 11, 16, 0.8);
-    
+
     .spinner {
       width: 50px;
       height: 50px;
-      border: 3px solid var(--neon-purple);
-      border-top-color: var(--neon-blue);
+      border: 3px solid var(--neon-purple, #bc13fe);
+      border-top-color: var(--neon-blue, #00f2ff);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -146,21 +389,59 @@
 
     &.error p {
       color: #ff4757;
+      padding: 0 20px;
+      text-align: center;
     }
   }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-// Responsive styles for tablets
+/* --- Responsive Breakpoints --- */
+
+// Tablet & Mobile combined for sidebar logic (Sidebar becomes drawer)
+@media (max-width: 1024px) {
+  .menu-toggle {
+    display: block; // Show toggle button
+  }
+
+  .sidebar-overlay {
+    display: block; // Enable overlay structure
+  }
+
+  .history-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%); // Hide off-screen by default
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    background: #0f1016; // Solid background for better readability over content
+
+    &.open {
+      transform: translateX(0); // Slide in
+    }
+
+    .sidebar-header .close-sidebar-btn {
+      display: block; // Show close button
+    }
+  }
+
+  .main-content {
+    padding: 1rem;
+    padding-top: 4rem; // Space for menu toggle
+  }
+}
+
 @media (max-width: 768px) {
   .studio-container {
-    padding: 2rem 1rem;
-
     h1 {
       font-size: 2rem;
       letter-spacing: 2px;
-      text-align: center;
     }
   }
 
@@ -169,7 +450,8 @@
     gap: 10px;
 
     .gen-btn {
-      padding: 15px 30px;
+      width: 100%;
+      padding: 15px;
     }
   }
 
@@ -182,43 +464,17 @@
   }
 }
 
-// Responsive styles for mobile phones
 @media (max-width: 480px) {
-  .studio-container {
-    padding: 1.5rem 0.75rem;
-
-    h1 {
-      font-size: 1.5rem;
-      letter-spacing: 1px;
-    }
+  .history-sidebar {
+    width: 85vw; // Slightly wider on very small screens
   }
 
-  .input-group {
-    input {
-      font-size: 1rem;
-      padding: 12px;
-    }
-
-    .gen-btn {
-      font-size: 0.9rem;
-      padding: 12px 20px;
-    }
+  .studio-container h1 {
+    font-size: 1.5rem;
   }
 
-  .display-frame {
-    max-width: 100%;
-    border-radius: 12px;
-    margin-top: 1.5rem;
-
-    .loading-overlay {
-      .spinner {
-        width: 40px;
-        height: 40px;
-      }
-
-      p {
-        font-size: 0.9rem;
-      }
-    }
+  .input-group input {
+    font-size: 1rem;
+    padding: 12px;
   }
 }

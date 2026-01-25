@@ -1,43 +1,96 @@
-<div class="studio-container">
-  <h1>AI Figurine Studio</h1>
+<div class="app-layout">
+  <!-- Mobile Sidebar Toggle -->
+  <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle Menu" title="Open Recent Designs">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
 
-  <div class="input-group">
-    <input 
-      type="text" 
-      [(ngModel)]="userPrompt" 
-      placeholder="Describe your figurine (e.g. Mecha Knight in rain)..."
-      [disabled]="figurineService.isLoading()"
-    />
-    <button class="gen-btn" (click)="onGenerate()" [disabled]="figurineService.isLoading()">
-      {{ figurineService.isLoading() ? 'PROCESSING...' : 'DESIGN' }}
-    </button>
-  </div>
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" [class.open]="sidebarOpen()" (click)="closeSidebar()"></div>
 
-  <div class="display-frame">
-    @if (figurineService.isLoading()) {
-      <div class="loading-overlay">
-        <div class="spinner"></div>
-        <p>Synthesizing Reality...</p>
-      </div>
-    } @else if (figurineService.currentImage()) {
-      <div class="image-container">
-        <img [src]="figurineService.currentImage()" alt="Generated Figurine" />
-        <button class="download-btn" (click)="onDownload()" title="Download Image">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
+  <aside class="history-sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-header">
+      <h2>Your Recent Designs</h2>
+      <button class="close-sidebar-btn" (click)="closeSidebar()" aria-label="Close Sidebar" title="Close Sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="history-list">
+      @for (item of figurineService.history(); track item.id) {
+      <div class="history-card" (click)="onSelectFromHistory(item)">
+        <div class="thumbnail-wrapper">
+          <img [src]="item.url" [alt]="item.prompt" loading="lazy">
+        </div>
+        <div class="card-info">
+          <p class="prompt-preview" [title]="item.prompt">{{ item.prompt }}</p>
+          <span class="timestamp">{{ item.createdAt | date:'shortTime' }}</span>
+        </div>
+        <button class="delete-btn" (click)="onDelete($event, item)" title="Delete Design">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
       </div>
-    } @else if (figurineService.errorMessage()) {
-      <div class="loading-overlay error">
-        <p>{{ figurineService.errorMessage() }}</p>
+      } @empty {
+      <div class="empty-msg">
+        <p>No designs yet.</p>
       </div>
-    } @else {
-      <div class="loading-overlay">
-        <p class="placeholder-text">Awaiting Input Commands</p>
+      }
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="studio-container">
+      <h1>AI Figurine Studio</h1>
+
+      <div class="input-group">
+        <input type="text" [ngModel]="userPrompt()" (ngModelChange)="userPrompt.set($event)"
+          placeholder="Describe your figurine (e.g. Mecha Knight in rain)..."
+          [disabled]="figurineService.isLoading()" />
+        <button class="gen-btn" (click)="onGenerate()" [disabled]="figurineService.isLoading()">
+          {{ figurineService.isLoading() ? 'PROCESSING...' : 'DESIGN' }}
+        </button>
       </div>
-    }
-  </div>
+
+      <div class="display-frame">
+        @if (figurineService.isLoading()) {
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <p>Synthesizing Reality...</p>
+        </div>
+        } @else if (figurineService.currentImage()) {
+        <div class="image-container">
+          <img [src]="figurineService.currentImage()" alt="Generated Figurine" />
+          <button class="download-btn" (click)="onDownload()" title="Download Image">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+        } @else if (figurineService.errorMessage()) {
+        <div class="loading-overlay error">
+          <p>{{ figurineService.errorMessage() }}</p>
+        </div>
+        } @else {
+        <div class="loading-overlay">
+          <p class="placeholder-text">Awaiting Input Commands</p>
+        </div>
+        }
+      </div>
+    </div>
+  </main>
 </div>
