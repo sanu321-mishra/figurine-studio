@@ -1,6 +1,14 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment.development';
+// Define the interface to match your C# model
+export interface FigurineItem {
+  id: string;
+  userId: string;
+  prompt: string;
+  url: string;
+  createdAt: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,27 +22,28 @@ export class FigurineService {
   errorMessage = signal<string | null>(null);
 
   // NEW: Signal to store the history of figurines
-  history = signal<any[]>([]);
+  history = signal<FigurineItem[]>([]);
 
   generateFigurine(prompt: string) {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const url = environment.azureFunctionBaseUrl + '/savefigurine';
-    const body = { prompt: prompt };
+    return this.http.post<FigurineItem>(`${environment.azureFunctionBaseUrl}/savefigurine`, { prompt }).subscribe({
+      next: (newItem) => {
+        // 1. Set the main display image
+        if (newItem && newItem.url) {
+          this.preloadImage(newItem.url);
+          this.currentImage.set(newItem.url);
 
-    this.http.post<any>(url, body).subscribe({
-      next: (response) => {
-        if (response && response.url) {
-          this.preloadImage(response.url);
-
-          // ADD TO HISTORY: Prepend the new item to the top of the list
-          this.history.update(current => [response, ...current]);
+          // 2. Add the new item to the TOP of the history list
+          this.history.update(currentHistory => [newItem, ...currentHistory]);
         }
+
+        this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Generation Error:', err);
-        this.errorMessage.set('Failed to generate figurine.');
+        console.error('Error generating figurine:', err);
+        this.errorMessage.set('System overload. Please try again.');
         this.isLoading.set(false);
       }
     });
