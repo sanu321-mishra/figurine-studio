@@ -1,1 +1,15 @@
+<app-header></app-header>
+
+@if (currentUser()) {
 <app-figurine-designer />
+} @else {
+<div class="landing-page">
+    <div class="hero-content">
+        <h2>Welcome to Figurine Studio</h2>
+        <p>Create unique, AI-generated figurine designs in seconds.</p>
+        <div class="cta-container">
+            <p>Login with GitHub or Google above to start designing!</p>
+        </div>
+    </div>
+</div>
+}

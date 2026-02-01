@@ -24,11 +24,34 @@ export class FigurineService {
   // NEW: Signal to store the history of figurines
   history = signal<FigurineItem[]>([]);
 
-  generateFigurine(prompt: string) {
+  // NEW: specific signal for auth user
+  currentUser = signal<any>(null);
+
+  async getUserInfo() {
+    try {
+      const response = await fetch('/.auth/me');
+      const payload = await response.json();
+      const user = payload.clientPrincipal;
+      this.currentUser.set(user); // Update state
+      return user;
+    } catch {
+      this.currentUser.set(null);
+      return null;
+    }
+  }
+
+  async getUserId(): Promise<string> {
+    const clientPrincipal = await this.getUserInfo();
+    return clientPrincipal ? clientPrincipal.userId : 'guest-user';
+  }
+
+  async generateFigurine(prompt: string) {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    return this.http.post<FigurineItem>(`${environment.azureFunctionBaseUrl}/savefigurine`, { prompt }).subscribe({
+    const userId = await this.getUserId();
+
+    return this.http.post<FigurineItem>(`${environment.azureFunctionBaseUrl}/savefigurine`, { prompt, userId }).subscribe({
       next: (newItem) => {
         // 1. Set the main display image
         if (newItem && newItem.url) {
@@ -66,20 +89,16 @@ export class FigurineService {
     });
   }
 
-  deleteFigurine(id: string) {
-    const url = `${environment.azureFunctionBaseUrl}/figurine/${id}`;
+  deleteFigurine(id: string, userId: string) {
+    // New URL structure: /api/figurine/USER_ID/ITEM_ID
+    const url = `${environment.azureFunctionBaseUrl}/figurine/${userId}/${id}`;
 
     return this.http.delete(url).subscribe({
       next: () => {
-        // Remove the item from the local history signal instantly
+        // Remove from the local history signal so the UI updates instantly
         this.history.update(items => items.filter(item => item.id !== id));
-
-        // If the deleted image was the one currently being viewed, clear it
-        if (this.currentImage()?.includes(id)) {
-          this.currentImage.set(null);
-        }
       },
-      error: (err) => console.error('Delete failed', err)
+      error: (err) => console.error("Delete failed", err)
     });
   }
 

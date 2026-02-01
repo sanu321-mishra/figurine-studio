@@ -1,0 +1,24 @@
+<header class="app-header">
+    <div class="logo">
+        <h1>Figurine Studio</h1>
+    </div>
+
+    <div class="auth-buttons">
+        <ng-container *ngIf="!currentUser()">
+            <a href="/.auth/login/github" class="btn-auth btn-github">
+                <img src="https://simpleicons.org/icons/github.svg" alt="GitHub" width="20" height="20">
+                Login with GitHub
+            </a>
+
+            <a href="/.auth/login/google" class="btn-auth btn-google">
+                <img src="https://simpleicons.org/icons/google.svg" alt="Google" width="20" height="20">
+                Login with Google
+            </a>
+        </ng-container>
+
+        <ng-container *ngIf="currentUser()">
+            <span class="user-greeting">Hi, {{ currentUser().userDetails }}</span>
+            <a href="/.auth/logout" class="btn-auth btn-logout">Logout</a>
+        </ng-container>
+    </div>
+</header>

@@ -17,8 +17,11 @@ export class FigurineDesignerComponent implements OnInit {
   sidebarOpen = signal<boolean>(false);
 
   ngOnInit() {
-    // Load history from Azure Cosmos DB on startup
-    this.figurineService.getHistory('test-user-123');
+    // Current user is guaranteed to be set because this component is guarded by @if(currentUser) in parent
+    const user = this.figurineService.currentUser();
+    if (user && user.userId) {
+      this.figurineService.getHistory(user.userId);
+    }
   }
 
   toggleSidebar() {
@@ -75,7 +78,7 @@ export class FigurineDesignerComponent implements OnInit {
   onDelete(event: Event, item: any) {
     event.stopPropagation(); // Prevent triggering the card selection
     if (confirm('Are you sure you want to delete this design?')) {
-      this.figurineService.deleteFigurine(item.id);
+      this.figurineService.deleteFigurine(item.id, item.userId);
 
       // If the deleted item is currently displayed, clear the main view
       if (this.figurineService.currentImage() === item.url) {
