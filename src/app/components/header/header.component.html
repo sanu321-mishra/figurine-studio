@@ -17,7 +17,7 @@
         </ng-container>
 
         <ng-container *ngIf="currentUser()">
-            <span class="user-greeting">Hi, {{ currentUser().userDetails }}</span>
+            <span class="user-greeting" [title]="currentUser().userDetails">Hi, {{ currentUser().userDetails }}</span>
             <a href="/.auth/logout" class="btn-auth btn-logout">Logout</a>
         </ng-container>
     </div>
